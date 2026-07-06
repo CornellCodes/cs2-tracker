@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import pool from './db/index';
+import playerRoutes from './routes/players';
 
 dotenv.config();
 
@@ -23,6 +24,8 @@ app.get('/db-test', async (req, res) => {
     res.json({ connected: false, error: String(error) });
   }
 });
+
+app.use('/api/players', playerRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
