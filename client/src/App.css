@@ -1,0 +1,119 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  background-color: #0a0a0a;
+  color: #ffffff;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.app {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 20px;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  color: #e8b04b;
+  margin-bottom: 8px;
+}
+
+.header p {
+  color: #888;
+  font-size: 1rem;
+}
+
+.search-container {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+.search-input {
+  flex: 1;
+  padding: 14px 18px;
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 8px;
+  color: #fff;
+  font-size: 1rem;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.search-input:focus {
+  border-color: #e8b04b;
+}
+
+.search-button {
+  padding: 14px 28px;
+  background: #e8b04b;
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.search-button:hover {
+  background: #d4a043;
+}
+
+.search-button:disabled {
+  background: #555;
+  cursor: not-allowed;
+}
+
+.error {
+  background: #2a1a1a;
+  border: 1px solid #ff4444;
+  color: #ff4444;
+  padding: 14px 18px;
+  border-radius: 8px;
+  margin-bottom: 24px;
+}
+
+.player-card {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.avatar {
+  width: 96px;
+  height: 96px;
+  border-radius: 8px;
+  border: 2px solid #e8b04b;
+}
+
+.player-info h2 {
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+  color: #e8b04b;
+}
+
+.steam-id {
+  color: #888;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+}
+
+.last-updated {
+  color: #666;
+  font-size: 0.8rem;
+}
