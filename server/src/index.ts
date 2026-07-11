@@ -10,11 +10,21 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://cs2-tracker-self.vercel.app'
+];
+// Also allow Vercel preview deployments, e.g. cs2-tracker-git-<branch>-<team>.vercel.app
+const vercelPreviewPattern = /^https:\/\/cs2-tracker-[a-z0-9-]+\.vercel\.app$/;
+
 app.use(cors({
-  origin: [
-    'http://localhost:3000',
-    'https://cs2-tracker-self.vercel.app'
-  ]
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin) || vercelPreviewPattern.test(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }
 }));
 app.use(express.json());
 
