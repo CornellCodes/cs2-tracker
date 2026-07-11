@@ -1,3 +1,4 @@
+import EloChart from './components/EloChart';
 import React, { useState } from 'react';
 import axios from 'axios';
 import './App.css';
@@ -47,6 +48,7 @@ function App() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [activeTab, setActiveTab] = useState<'steam' | 'faceit'>('faceit');
+  const [eloHistory, setEloHistory] = useState<any[]>([]);
 
   const handleSteamSearch = async () => {
     if (!steamId.trim()) return;
@@ -77,6 +79,11 @@ function App() {
         `http://localhost:3001/api/faceit/player/${faceitUsername}`
       );
       setFaceitResult(response.data);
+      // Fetch ELO history
+      const historyResponse = await axios.get(
+      `http://localhost:3001/api/faceit/history/${faceitUsername}`
+      );
+    setEloHistory(historyResponse.data.history);
     } catch (err) {
       setError('Player not found. Check your FACEIT username and try again.');
     } finally {
@@ -145,50 +152,52 @@ function App() {
       {error && <div className="error">{error}</div>}
 
       {faceitResult && activeTab === 'faceit' && (
-        <div className="player-card">
-          <div className="player-header">
-            <img
-              src={faceitResult.player.avatar_url}
-              alt={faceitResult.player.display_name}
-              className="avatar"
-            />
-            <div className="player-info">
-              <h2>{faceitResult.player.display_name}</h2>
-              <div className="level-badge" style={{ backgroundColor: getLevelColor(faceitResult.faceit.level) }}>
-                Level {faceitResult.faceit.level}
-              </div>
-              <p className="elo">ELO: {faceitResult.faceit.elo}</p>
-            </div>
-          </div>
-
-          <div className="stats-grid">
-            <div className="stat-box">
-              <span className="stat-value">{faceitResult.faceit.kd_ratio}</span>
-              <span className="stat-label">K/D Ratio</span>
-            </div>
-            <div className="stat-box">
-              <span className="stat-value">{faceitResult.faceit.win_rate}%</span>
-              <span className="stat-label">Win Rate</span>
-            </div>
-            <div className="stat-box">
-              <span className="stat-value">{faceitResult.faceit.matches}</span>
-              <span className="stat-label">Matches</span>
-            </div>
-            <div className="stat-box">
-              <span className="stat-value">{faceitResult.faceit.wins}</span>
-              <span className="stat-label">Wins</span>
-            </div>
-            <div className="stat-box">
-              <span className="stat-value">{faceitResult.faceit.headshots}%</span>
-              <span className="stat-label">Headshots</span>
-            </div>
-            <div className="stat-box">
-              <span className="stat-value">{parseInt(faceitResult.faceit.matches) - parseInt(faceitResult.faceit.wins)}</span>
-              <span className="stat-label">Losses</span>
-            </div>
-          </div>
+  <div className="player-card">
+    <div className="player-header">
+      <img
+        src={faceitResult.player.avatar_url}
+        alt={faceitResult.player.display_name}
+        className="avatar"
+      />
+      <div className="player-info">
+        <h2>{faceitResult.player.display_name}</h2>
+        <div className="level-badge" style={{ backgroundColor: getLevelColor(faceitResult.faceit.level) }}>
+          Level {faceitResult.faceit.level}
         </div>
-      )}
+        <p className="elo">ELO: {faceitResult.faceit.elo}</p>
+      </div>
+    </div>
+
+    <div className="stats-grid">
+      <div className="stat-box">
+        <span className="stat-value">{faceitResult.faceit.kd_ratio}</span>
+        <span className="stat-label">K/D Ratio</span>
+      </div>
+      <div className="stat-box">
+        <span className="stat-value">{faceitResult.faceit.win_rate}%</span>
+        <span className="stat-label">Win Rate</span>
+      </div>
+      <div className="stat-box">
+        <span className="stat-value">{faceitResult.faceit.matches}</span>
+        <span className="stat-label">Matches</span>
+      </div>
+      <div className="stat-box">
+        <span className="stat-value">{faceitResult.faceit.wins}</span>
+        <span className="stat-label">Wins</span>
+      </div>
+      <div className="stat-box">
+        <span className="stat-value">{faceitResult.faceit.headshots}%</span>
+        <span className="stat-label">Headshots</span>
+      </div>
+      <div className="stat-box">
+        <span className="stat-value">{parseInt(faceitResult.faceit.matches) - parseInt(faceitResult.faceit.wins)}</span>
+        <span className="stat-label">Losses</span>
+      </div>
+    </div>
+
+    <EloChart history={eloHistory} username={faceitResult.player.display_name} />
+  </div>
+)}
 
       {steamResult && activeTab === 'steam' && (
         <div className="player-card">

@@ -104,5 +104,35 @@ router.get('/player/:username', async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to fetch FACEIT data' });
   }
 });
+router.get('/history/:username', async (req: Request, res: Response) => {
+  try {
+    const { username } = req.params;
 
+    const player = await query(
+      'SELECT * FROM players WHERE faceit_username = $1',
+      [username]
+    );
+
+    if (player.rows.length === 0) {
+      return res.status(404).json({ error: 'Player not found in database. Search for them first.' });
+    }
+
+    const history = await query(
+      `SELECT elo, level, kd_ratio, wins, matches, fetched_at
+       FROM faceit_stats
+       WHERE player_id = $1
+       ORDER BY fetched_at ASC`,
+      [player.rows[0].id]
+    );
+
+    res.json({
+      player: player.rows[0],
+      history: history.rows
+    });
+
+  } catch (error) {
+    console.error('History error:', error);
+    res.status(500).json({ error: 'Failed to fetch history' });
+  }
+});
 export default router;
