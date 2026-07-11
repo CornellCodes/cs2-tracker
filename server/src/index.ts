@@ -5,7 +5,7 @@ import pool from './db/index';
 import playerRoutes from './routes/players';
 import faceitRoutes from './routes/faceit';
 
-dotenv.config();
+dotenv.config({ override: false });
 
 const app = express();
 const PORT = process.env.PORT || 3001;
