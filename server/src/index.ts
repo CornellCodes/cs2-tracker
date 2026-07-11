@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import pool from './db/index';
 import playerRoutes from './routes/players';
+import faceitRoutes from './routes/faceit';
 
 dotenv.config();
 
@@ -26,6 +27,7 @@ app.get('/db-test', async (req, res) => {
 });
 
 app.use('/api/players', playerRoutes);
+app.use('/api/faceit', faceitRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

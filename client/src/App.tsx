@@ -5,84 +5,206 @@ import './App.css';
 interface Player {
   id: number;
   steam_id: string;
+  faceit_username: string;
   display_name: string;
   avatar_url: string;
   last_updated: string;
 }
 
-interface SearchResult {
+interface FaceitStats {
+  elo: number;
+  level: number;
+  wins: string;
+  matches: string;
+  kd_ratio: string;
+  win_rate: string;
+  headshots: string;
+}
+
+interface SteamResult {
   player: Player;
   steam_profile: any;
 }
 
+interface FaceitResult {
+  player: Player;
+  faceit: FaceitStats;
+}
+
+function getLevelColor(level: number): string {
+  if (level <= 3) return '#eee';
+  if (level <= 5) return '#6dc249';
+  if (level <= 7) return '#f4a21e';
+  if (level <= 9) return '#eb4c2c';
+  return '#c00';
+}
+
 function App() {
   const [steamId, setSteamId] = useState('');
-  const [result, setResult] = useState<SearchResult | null>(null);
+  const [faceitUsername, setFaceitUsername] = useState('');
+  const [steamResult, setSteamResult] = useState<SteamResult | null>(null);
+  const [faceitResult, setFaceitResult] = useState<FaceitResult | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [activeTab, setActiveTab] = useState<'steam' | 'faceit'>('faceit');
 
-  const handleSearch = async () => {
+  const handleSteamSearch = async () => {
     if (!steamId.trim()) return;
     setLoading(true);
     setError('');
-    setResult(null);
+    setSteamResult(null);
 
     try {
       const response = await axios.get(
         `http://localhost:3001/api/players/search/${steamId}`
       );
-      setResult(response.data);
+      setSteamResult(response.data);
     } catch (err) {
-      setError('Player not found. Make sure you entered a valid Steam ID.');
+      setError('Player not found. Check your Steam ID and try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') handleSearch();
+  const handleFaceitSearch = async () => {
+    if (!faceitUsername.trim()) return;
+    setLoading(true);
+    setError('');
+    setFaceitResult(null);
+
+    try {
+      const response = await axios.get(
+        `http://localhost:3001/api/faceit/player/${faceitUsername}`
+      );
+      setFaceitResult(response.data);
+    } catch (err) {
+      setError('Player not found. Check your FACEIT username and try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent, handler: () => void) => {
+    if (e.key === 'Enter') handler();
   };
 
   return (
     <div className="app">
       <div className="header">
         <h1>CS2 Stat Tracker</h1>
-        <p>Search for any player by Steam ID</p>
+        <p>Search by Steam ID or FACEIT username</p>
       </div>
 
-      <div className="search-container">
-        <input
-          type="text"
-          placeholder="Enter Steam ID (e.g. 76561198147811573)"
-          value={steamId}
-          onChange={(e) => setSteamId(e.target.value)}
-          onKeyPress={handleKeyPress}
-          className="search-input"
-        />
+      <div className="tabs">
         <button
-          onClick={handleSearch}
-          disabled={loading}
-          className="search-button"
+          className={`tab ${activeTab === 'faceit' ? 'active' : ''}`}
+          onClick={() => setActiveTab('faceit')}
         >
-          {loading ? 'Searching...' : 'Search'}
+          FACEIT
+        </button>
+        <button
+          className={`tab ${activeTab === 'steam' ? 'active' : ''}`}
+          onClick={() => setActiveTab('steam')}
+        >
+          Steam
         </button>
       </div>
 
+      {activeTab === 'faceit' && (
+        <div className="search-container">
+          <input
+            type="text"
+            placeholder="Enter FACEIT username (e.g. Phil-Ivey)"
+            value={faceitUsername}
+            onChange={(e) => setFaceitUsername(e.target.value)}
+            onKeyPress={(e) => handleKeyPress(e, handleFaceitSearch)}
+            className="search-input"
+          />
+          <button onClick={handleFaceitSearch} disabled={loading} className="search-button">
+            {loading ? 'Searching...' : 'Search'}
+          </button>
+        </div>
+      )}
+
+      {activeTab === 'steam' && (
+        <div className="search-container">
+          <input
+            type="text"
+            placeholder="Enter Steam ID (e.g. 76561198147811573)"
+            value={steamId}
+            onChange={(e) => setSteamId(e.target.value)}
+            onKeyPress={(e) => handleKeyPress(e, handleSteamSearch)}
+            className="search-input"
+          />
+          <button onClick={handleSteamSearch} disabled={loading} className="search-button">
+            {loading ? 'Searching...' : 'Search'}
+          </button>
+        </div>
+      )}
+
       {error && <div className="error">{error}</div>}
 
-      {result && (
+      {faceitResult && activeTab === 'faceit' && (
         <div className="player-card">
-          <img
-            src={result.player.avatar_url}
-            alt={result.player.display_name}
-            className="avatar"
-          />
-          <div className="player-info">
-            <h2>{result.player.display_name}</h2>
-            <p className="steam-id">Steam ID: {result.player.steam_id}</p>
-            <p className="last-updated">
-              Last updated: {new Date(result.player.last_updated).toLocaleString()}
-            </p>
+          <div className="player-header">
+            <img
+              src={faceitResult.player.avatar_url}
+              alt={faceitResult.player.display_name}
+              className="avatar"
+            />
+            <div className="player-info">
+              <h2>{faceitResult.player.display_name}</h2>
+              <div className="level-badge" style={{ backgroundColor: getLevelColor(faceitResult.faceit.level) }}>
+                Level {faceitResult.faceit.level}
+              </div>
+              <p className="elo">ELO: {faceitResult.faceit.elo}</p>
+            </div>
+          </div>
+
+          <div className="stats-grid">
+            <div className="stat-box">
+              <span className="stat-value">{faceitResult.faceit.kd_ratio}</span>
+              <span className="stat-label">K/D Ratio</span>
+            </div>
+            <div className="stat-box">
+              <span className="stat-value">{faceitResult.faceit.win_rate}%</span>
+              <span className="stat-label">Win Rate</span>
+            </div>
+            <div className="stat-box">
+              <span className="stat-value">{faceitResult.faceit.matches}</span>
+              <span className="stat-label">Matches</span>
+            </div>
+            <div className="stat-box">
+              <span className="stat-value">{faceitResult.faceit.wins}</span>
+              <span className="stat-label">Wins</span>
+            </div>
+            <div className="stat-box">
+              <span className="stat-value">{faceitResult.faceit.headshots}%</span>
+              <span className="stat-label">Headshots</span>
+            </div>
+            <div className="stat-box">
+              <span className="stat-value">{parseInt(faceitResult.faceit.matches) - parseInt(faceitResult.faceit.wins)}</span>
+              <span className="stat-label">Losses</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {steamResult && activeTab === 'steam' && (
+        <div className="player-card">
+          <div className="player-header">
+            <img
+              src={steamResult.player.avatar_url}
+              alt={steamResult.player.display_name}
+              className="avatar"
+            />
+            <div className="player-info">
+              <h2>{steamResult.player.display_name}</h2>
+              <p className="steam-id">Steam ID: {steamResult.player.steam_id}</p>
+              <p className="last-updated">
+                Last updated: {new Date(steamResult.player.last_updated).toLocaleString()}
+              </p>
+            </div>
           </div>
         </div>
       )}
